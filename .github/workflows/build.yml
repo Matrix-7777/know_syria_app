@@ -16,6 +16,10 @@ jobs:
         with:
           channel: stable
       - run: bash setup_know_syria.sh
+      - name: Upgrade speech_to_text
+        run: |
+          sed -i 's/speech_to_text: .*/speech_to_text: ^7.2.0/' pubspec.yaml
+          flutter pub get
       - name: Build APK
         run: |
           set +e
