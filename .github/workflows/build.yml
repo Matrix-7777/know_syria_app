@@ -16,7 +16,18 @@ jobs:
         with:
           channel: stable
       - run: bash setup_know_syria.sh
-      - run: flutter build apk --release
+      - name: Build APK
+        run: |
+          set +e
+          flutter build apk --release 2>&1 | tee build.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            msg=$(grep -A12 "What went wrong" build.log | head -25)
+            if [ -z "$msg" ]; then msg=$(grep -iE "error|failed" build.log | head -15); fi
+            msg=$(printf '%s\n' "$msg" | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=Build failed::$msg"
+          fi
+          exit $code
       - uses: actions/upload-artifact@v4
         with:
           name: know-syria-apk
